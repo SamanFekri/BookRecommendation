@@ -95,7 +95,6 @@ class Compute_Similarity:
                     self.compute_similarity_object = Compute_Similarity_Cython(dataMatrix, **args)
 
                 except ImportError:
-                    print(ImportError)
                     print("Unable to load Cython Compute_Similarity, reverting to Python")
                     self.compute_similarity_object = Compute_Similarity_Python(dataMatrix, **args)
 
