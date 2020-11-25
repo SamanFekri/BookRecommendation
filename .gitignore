@@ -134,3 +134,5 @@ dmypy.json
 
 #.DS_Store
 .DS_Store
+data/Movielens_10M
+Data_manager_split_datasets/
