@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+python run_compile_all_cython.py#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 @author: Massimo Quadrana
