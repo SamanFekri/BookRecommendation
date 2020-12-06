@@ -59,69 +59,16 @@ URM_train, URM_validation = split_train_in_two_percentage_global_sample(URM_trai
 evaluator_validation = EvaluatorHoldout(URM_validation, cutoff_list=[10])
 evaluator_test = EvaluatorHoldout(URM_test, cutoff_list=[10])
 
-
-### SLIM BRP train
-
-from SLIM_BPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
-#
-# recommender = SLIM_BPR_Cython(URM_train, recompile_cython=False)
-#
-# recommender.fit(epochs=10, batch_size=1, sgd_mode='sgd', learning_rate=1e-4, positive_threshold_BPR=1)
-
-
-recommender = SLIM_BPR_Cython(URM_all, recompile_cython=False)
-recommender.fit(epochs=20, batch_size=1, sgd_mode='sgd', learning_rate=1e-4, positive_threshold_BPR=1)
-slim_recoms = recommender.recommend(userTestList, cutoff=10)
-
-
-### content base filtering
-
-from KNN.ItemKNNCBFRecommender import ItemKNNCBFRecommender
-
-
-### Usinng TF IDF
-ICM_all = ICM_all.tocsr()
-num_tot_items = ICM_all.shape[0]
-
-# let's count how many items have a certain feature
-items_per_feature = np.ediff1d(ICM_all.indptr) + 1
-print(items_per_feature)
-
-IDF = np.array(np.log(num_tot_items / items_per_feature))
-
-from scipy.sparse import diags
-diags(IDF)
-
-ICM_idf = ICM_all.copy()
-
-ICM_idf = diags(IDF)*ICM_idf
-##############
-
-recommender = ItemKNNCBFRecommender(URM_all, ICM_idf)
-recommender.fit(shrink=15, topK=200)
-
-cbf_recoms = recommender.recommend(userTestList, cutoff=10)
-
+from puresvd import PureSVDRecommender
+recommender = PureSVDRecommender()
+recommender.fit(URM_all)
+recoms = recommender.recommend(userTestList)
 
 recomList = []
-
-for i in range(len(slim_recoms)):
-    temp = []
-    k = 0
-    for j in range(10):
-        if slim_recoms[i][j] not in temp:
-            temp.append(slim_recoms[i][j])
-            while k < 10 and cbf_recoms[i][k] in temp:
-                k += 1
-            if k < 10:
-                temp.append(cbf_recoms[i][k])
-
-    recomList.append(' '.join(str(e) for e in temp))
-
-print(recomList)
+for i in range(len(recoms)):
+    recomList.append(' '.join(str(e) for e in recoms[i]))
 
 res = {"user_id": userTestList, "item_list": recomList}
 result = pd.DataFrame(res, columns= ['user_id', 'item_list'])
 
-result.to_csv('outputs/hybrid_slim_cbfv2.csv', index = False, header=True)
-
+result.to_csv('outputs/puresvdv1.csv', index = False, header=True)
