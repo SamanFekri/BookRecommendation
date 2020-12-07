@@ -1,4 +1,4 @@
-python run_compile_all_cython.py#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 @author: Massimo Quadrana
@@ -36,6 +36,7 @@ class SLIMElasticNetRecommender(BaseItemSimilarityMatrixRecommender):
 
     def __init__(self, URM_train, verbose = True):
         super(SLIMElasticNetRecommender, self).__init__(URM_train, verbose = verbose)
+        self.URM_train = URM_train.tocsr()
 
 
     def fit(self, l1_ratio=0.1, alpha = 1.0, positive_only=True, topK = 100):
