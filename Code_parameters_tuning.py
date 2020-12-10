@@ -82,18 +82,47 @@ evaluator_test = EvaluatorHoldout(URM_test, cutoff_list=[10])
 # recommender.fit(beta=-0.1,alpha=1.,topK=200)
 
 ### SLIM BPR 0.0375
-from SLIM_BPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
-recommender = SLIM_BPR_Cython(URM_train, recompile_cython=False)
-recommender.fit(epochs=50, batch_size=100, sgd_mode='sgd', learning_rate=1e-2, positive_threshold_BPR=1)
+# from SLIM_BPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
+# recommender = SLIM_BPR_Cython(URM_train, recompile_cython=False)
+# recommender.fit(epochs=50, batch_size=100, sgd_mode='sgd', learning_rate=1e-2, positive_threshold_BPR=1)
+# recommender.get_S_incremental_and_set_W()
 
-checker = [1e-1, 1e-2, 1e-3, 1e-4]
+### CBF KNN
+### Usinng TF IDF
+# from KNN.ItemKNNCBFRecommender import ItemKNNCBFRecommender
+# recommender = ItemKNNCBFRecommender(URM_train, ICM_idf)
+#
+# recommender.fit(shrink=10, topK=800)
+
+### Hybrid
+## TF_DF
+ICM_all = ICM_all.tocsr()
+num_tot_items = ICM_all.shape[0]
+
+# let's count how many items have a certain feature
+items_per_feature = np.ediff1d(ICM_all.indptr) + 1
+# print(items_per_feature)
+
+IDF = np.array(np.log(num_tot_items / items_per_feature))
+
+from scipy.sparse import diags
+diags(IDF)
+
+ICM_idf = ICM_all.copy()
+ICM_idf = diags(IDF)*ICM_idf
+
+from HybridRecommender import HybridRecommender
+recommender = HybridRecommender(URM_train)
+
+checker = [1.0,0.8,0.5,0.2, 0.0]
 MAP_list = []
 for k in checker:
-    recommender.fit(epochs=50, batch_size=100, sgd_mode='sgd', learning_rate=1e-2, positive_threshold_BPR=1)
+    recommender.fit(k,ICM_idf)
     MAP_list.append(evaluator_test.evaluateRecommender(recommender)[0][10]['MAP'])
     print(f"MAP for {k} added {MAP_list[-1]}")
 
 import matplotlib.pyplot as pyplot
+
 pyplot.plot(checker ,MAP_list, 'r-')
 pyplot.ylabel('MAP')
 pyplot.xlabel('k')
