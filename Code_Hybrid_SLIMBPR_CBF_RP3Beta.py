@@ -78,18 +78,31 @@ diags(IDF)
 ICM_idf = ICM_all.copy()
 
 ICM_idf = diags(IDF)*ICM_idf
-##############
+############## top pop
+
+item_popularity = np.ediff1d(URM_all.tocsc().indptr)
+
+popular_items = np.argsort(item_popularity)
+popular_items = np.flip(popular_items, axis=0)
+popular_items = popular_items[0:10]
+###########
+
 from HybridRecommender import HybridRecommender
 recommender = HybridRecommender(URM_all)
 recommender.fit([0.2, 0.3, 0.2], ICM_idf)
 
 recoms = recommender.recommend(userTestList, cutoff=10)
 
-
 recomList = []
 
 for i in range(len(recoms)):
-    recomList.append(' '.join(str(e) for e in recoms[i]))
+    user_id = userTestList[i]
+    start_pos = URM_train.indptr[user_id]
+    end_pos = URM_train.indptr[user_id + 1]
+    if start_pos == end_pos:
+        recomList.append(' '.join(str(e) for e in popular_items))
+    else:
+        recomList.append(' '.join(str(e) for e in recoms[i]))
 
 # print(recomList)
 

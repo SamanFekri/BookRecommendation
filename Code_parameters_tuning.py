@@ -94,8 +94,21 @@ evaluator_test = EvaluatorHoldout(URM_test, cutoff_list=[10])
 #
 # recommender.fit(shrink=10, topK=800)
 
+# from SLIM_ElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
+# recommender = SLIMElasticNetRecommender(URM_train)
+##############
+# from MatrixFactorization.IALSRecommender import IALSRecommender
+# recommender = IALSRecommender(URM_train)
+
 ### Hybrid
-## TF_DF
+##top pop
+item_popularity = np.ediff1d(URM_all.tocsc().indptr)
+
+popular_items = np.argsort(item_popularity)
+popular_items = np.flip(popular_items, axis=0)
+popular_items = popular_items[0:10]
+
+# ## TF_DF
 ICM_all = ICM_all.tocsr()
 num_tot_items = ICM_all.shape[0]
 
@@ -114,12 +127,14 @@ ICM_idf = diags(IDF)*ICM_idf
 from HybridRecommender import HybridRecommender
 recommender = HybridRecommender(URM_train)
 
-checker = [1.0,0.8,0.5,0.2, 0.0]
+checker = [True, False]
 MAP_list = []
 for k in checker:
-    recommender.fit(k,ICM_idf)
+    recommender.fit(weights=None, ICM=ICM_idf, top_popular=popular_items, use_top_pop=k)
     MAP_list.append(evaluator_test.evaluateRecommender(recommender)[0][10]['MAP'])
     print(f"MAP for {k} added {MAP_list[-1]}")
+
+
 
 import matplotlib.pyplot as pyplot
 
