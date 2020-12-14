@@ -124,13 +124,23 @@ diags(IDF)
 ICM_idf = ICM_all.copy()
 ICM_idf = diags(IDF)*ICM_idf
 
-from HybridRecommender import HybridRecommender
-recommender = HybridRecommender(URM_train)
+from HybridRecommender2 import HybridRecommender2
+recommender2 = HybridRecommender2(URM_train)
 
-checker = [True, False]
+from HybridRecommender3 import HybridRecommender3
+recommender = HybridRecommender3(URM_train)
+
+
+checker = [0.0, "TF-IDF","BM25"]
 MAP_list = []
 for k in checker:
-    recommender.fit(weights=None, ICM=ICM_idf, top_popular=popular_items, use_top_pop=k)
+    print(f"Doing {k}")
+    if k == 0.0:
+        recommender2.fit(ICM=ICM_all)
+        MAP_list.append(evaluator_test.evaluateRecommender(recommender2)[0][10]['MAP'])
+        print(f"MAP for {k} added {MAP_list[-1]}")
+        continue
+    recommender.fit(ICM=ICM_all, k=k)
     MAP_list.append(evaluator_test.evaluateRecommender(recommender)[0][10]['MAP'])
     print(f"MAP for {k} added {MAP_list[-1]}")
 

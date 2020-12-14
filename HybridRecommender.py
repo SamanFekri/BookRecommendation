@@ -3,6 +3,8 @@ from Base.BaseSimilarityMatrixRecommender import BaseItemSimilarityMatrixRecomme
 from SLIM_BPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from GraphBased.RP3betaRecommender import RP3betaRecommender
 from KNN.ItemKNNCBFRecommender import ItemKNNCBFRecommender
+from GraphBased.P3alphaRecommender import P3alphaRecommender
+
 
 import numpy as np
 
@@ -20,5 +22,6 @@ class HybridRecommender(BaseItemSimilarityMatrixRecommender):
 
         cbf_recommender = ItemKNNCBFRecommender(self.URM_train, ICM)
         cbf_recommender.fit(800, 10)
+
 
         self.W_sparse = 0.2 * slim_recommender.W_sparse + 0.3 * rp3_recommender.W_sparse + 0.2 * cbf_recommender.W_sparse
